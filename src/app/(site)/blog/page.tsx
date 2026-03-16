@@ -255,7 +255,7 @@ export default function Blog() {
                     }}
                   />
                 </div>
-
+               
                 <div
                   style={{
                     padding: "30px",
