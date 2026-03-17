@@ -204,7 +204,7 @@ export default function Blog() {
               margin: 0,
             }}
           >
-            Popular Post
+            Our Recent Post
           </h2>
           <button
             style={{
@@ -255,7 +255,7 @@ export default function Blog() {
                     }}
                   />
                 </div>
-               
+
                 <div
                   style={{
                     padding: "30px",
@@ -288,7 +288,6 @@ export default function Blog() {
                   <div style={{ marginTop: "auto" }}>
                     <span
                       className="read-more-btn"
-
                       onClick={() => setActivePost(post)}
                       style={{
                         color: "#7c4dff",
