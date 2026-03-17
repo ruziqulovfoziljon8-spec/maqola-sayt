@@ -16,13 +16,12 @@ export default function Navbar() {
         backgroundColor: "#FCFCFC",
         justifyContent: "space-between",
         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-        position: "fixed", // Sahifada qotib turishi uchun
+        position: "fixed", 
         top: 0,
         left: 0,
-        zIndex: 1000, // Boshqa elementlardan ustun turishi uchun
+        zIndex: 1000, 
       }}
     >
-      {/* Logo qismi */}
       <div
         style={{
           width: "300px",
@@ -35,7 +34,6 @@ export default function Navbar() {
         <img src={logo1.src} alt="Logo" style={{ height: "50px" }} />
       </div>
 
-      {/* Linklar qismi */}
       <div
         style={{
           width: "600px",
