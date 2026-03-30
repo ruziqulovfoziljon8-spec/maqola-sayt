@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { db } from "@/app/firebase/firebase.config";
 import { collection, getDocs } from "firebase/firestore";
-import suniy from "../imagess/suniyy1.png"; 
+import suniy from "../imagess/suniyy1.png";
 
 interface Post {
   id: string;
@@ -17,6 +17,7 @@ export default function Blog() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activePost, setActivePost] = useState<Post | null>(null);
+  const [showAll, setShowAll] = useState(false); // View All holati uchun
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -105,89 +106,104 @@ export default function Blog() {
         .blog-card:hover h3 { color: #7c4dff; }
       `}</style>
 
+      {!showAll && (
+        <div
+          style={{
+            maxWidth: "1400px",
+            margin: "0 auto",
+            padding: "100px 5% 40px",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              backgroundColor: "#7e57e2",
+              borderRadius: "30px",
+              padding: "60px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              color: "white",
+              boxShadow: "0 20px 40px rgba(126, 87, 226, 0.3)",
+            }}
+          >
+            <div style={{ flex: 1, paddingRight: "40px", zIndex: 2 }}>
+              <h1
+                style={{
+                  fontSize: "52px",
+                  fontWeight: "bold",
+                  lineHeight: "1.1",
+                  marginBottom: "25px",
+                }}
+              >
+                Sun’iy intellekt kelajakni qanday o‘zgartiradi?
+              </h1>
+              <p
+                style={{
+                  fontSize: "18px",
+                  lineHeight: "1.6",
+                  marginBottom: "35px",
+                  opacity: 0.9,
+                }}
+              >
+                Sun’iy intellekt nafaqat robot texnikasi, balki kundalik
+                hayotimizning ajralmas qismiga aylanmoqda...
+              </p>
+              <button
+                onClick={() =>
+                  setActivePost({
+                    id: "hero-ai",
+                    title: "Sun’iy intellekt kelajakni qanday o‘zgartiradi?",
+                    img: suniy.src,
+                    desc: "Sun’iy intellekt nafaqat robot texnikasi...",
+                    text: "Sun’iy intellekt nafaqat robot texnikasi, balki kundalik hayotimizning ajralmas qismiga aylanmoqda. U ta’lim, tibbiyot, iqtisodiyot va boshqa ko‘plab sohalarda inqilobiy o‘zgarishlar yasamoqda.",
+                  })
+                }
+                style={{
+                  backgroundColor: "white",
+                  color: "#7e57e2",
+                  padding: "15px 40px",
+                  border: "none",
+                  borderRadius: "12px",
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
+              >
+                Read more
+              </button>
+            </div>
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                justifyContent: "center",
+                zIndex: 2,
+              }}
+            >
+              <img
+                src={suniy.src}
+                alt="AI Hero"
+                style={{
+                  height: "420px",
+                  width: "420px",
+                  objectFit: "cover",
+                  borderRadius: "25px",
+                  boxShadow: "0 15px 35px rgba(0,0,0,0.2)",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       <div
         style={{
           maxWidth: "1400px",
           margin: "0 auto",
-          padding: "100px 5% 40px",
+          padding: showAll ? "100px 5% 60px" : "60px 5%",
         }}
       >
-        <div
-          style={{
-            width: "100%",
-            backgroundColor: "#7e57e2",
-            borderRadius: "30px",
-            padding: "60px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-            boxShadow: "0 20px 40px rgba(126, 87, 226, 0.3)",
-          }}
-        >
-          <div style={{ flex: 1, paddingRight: "40px", zIndex: 2 }}>
-            <h1
-              style={{
-                fontSize: "52px",
-                fontWeight: "bold",
-                lineHeight: "1.1",
-                marginBottom: "25px",
-              }}
-            >
-              Sun’iy intellekt kelajakni qanday o‘zgartiradi?
-            </h1>
-            <p
-              style={{
-                fontSize: "18px",
-                lineHeight: "1.6",
-                marginBottom: "35px",
-                opacity: 0.9,
-              }}
-            >
-              Sun’iy intellekt nafaqat robot texnikasi, balki kundalik
-              hayotimizning ajralmas qismiga aylanmoqda...
-            </p>
-            <button
-              style={{
-                backgroundColor: "white",
-                color: "#7e57e2",
-                padding: "15px 40px",
-                border: "none",
-                borderRadius: "12px",
-                fontSize: "16px",
-                fontWeight: "bold",
-                cursor: "pointer",
-              }}
-            >
-              Read more
-            </button>
-          </div>
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              justifyContent: "center",
-              zIndex: 2,
-            }}
-          >
-            <img
-              src={suniy.src}
-              alt="AI Hero"
-              style={{
-                height: "420px",
-                width: "420px",
-                objectFit: "cover",
-                borderRadius: "25px",
-                boxShadow: "0 15px 35px rgba(0,0,0,0.2)",
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "60px 5%" }}>
         <div
           style={{
             display: "flex",
@@ -204,9 +220,11 @@ export default function Blog() {
               margin: 0,
             }}
           >
-            Our Recent Post
+            {showAll ? "All Posts" : "Our Recent Post"}
           </h2>
+
           <button
+            onClick={() => setShowAll(!showAll)}
             style={{
               backgroundColor: "#7c4dff",
               color: "white",
@@ -218,7 +236,7 @@ export default function Blog() {
               cursor: "pointer",
             }}
           >
-            View All
+            {showAll ? "Back Home" : "View All"}
           </button>
         </div>
 
@@ -232,6 +250,7 @@ export default function Blog() {
               <div
                 key={post.id}
                 className="blog-card"
+                onClick={() => setActivePost(post)}
                 style={{
                   width: "31.6%",
                   backgroundColor: "white",
@@ -255,7 +274,6 @@ export default function Blog() {
                     }}
                   />
                 </div>
-
                 <div
                   style={{
                     padding: "30px",
@@ -270,7 +288,6 @@ export default function Blog() {
                       fontWeight: "700",
                       marginBottom: "15px",
                       color: "#1a1a1a",
-                      transition: "0.3s",
                     }}
                   >
                     {post.title}
@@ -287,14 +304,11 @@ export default function Blog() {
                   </p>
                   <div style={{ marginTop: "auto" }}>
                     <span
-                      className="read-more-btn"
-                      onClick={() => setActivePost(post)}
                       style={{
                         color: "#7c4dff",
                         fontWeight: "700",
                         fontSize: "16px",
                         cursor: "pointer",
-                        textDecoration: "none",
                       }}
                     >
                       Read More...
