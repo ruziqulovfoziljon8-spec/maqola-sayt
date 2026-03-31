@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { db } from "@/app/firebase/firebase.config";
 import {
   collection,
@@ -8,25 +8,33 @@ import {
   doc,
   deleteDoc,
   updateDoc,
+  addDoc,
 } from "firebase/firestore";
 
 interface Post {
   id: string;
   title: string;
   desc: string;
+  text: string;
   img: string;
-  category?: string;
 }
 
 export default function Maqola() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("Hammasi");
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+
+  const [newPost, setNewPost] = useState({
+    title: "",
+    desc: "",
+    text: "",
+    img: "",
+  });
 
   const categories = ["Hammasi", "Halollik", "Oila", "Sport", "Texnologiya"];
 
@@ -36,7 +44,7 @@ export default function Maqola() {
       const data = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...(doc.data() as Omit<Post, "id">),
-      }));
+      })) as Post[];
       setPosts(data);
     } catch (error) {
       console.error("Xatolik:", error);
@@ -49,141 +57,140 @@ export default function Maqola() {
     fetchPosts();
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Rostdan ham o'chirmoqchimisiz?")) {
-      try {
-        await deleteDoc(doc(db, "posts", id));
-        setPosts(posts.filter((post) => post.id !== id));
-      } catch (error) {
-        alert("O'chirishda xatolik!");
-      }
-    }
-  };
-
-  // 3. TAHRIRLASH (EDIT) - MODALNI OCHISH
-  const openEditModal = (post: Post) => {
-    setEditingPost({ ...post, category: post.category || "Hammasi" });
-    setIsEditModalOpen(true);
-  };
-
-  // 4. TAHRIRLANGAN MA'LUMOTNI FIREBASE-GA SAQLASH
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingPost) return;
-
-    try {
-      const postRef = doc(db, "posts", editingPost.id);
-      await updateDoc(postRef, {
-        title: editingPost.title,
-        desc: editingPost.desc,
-        img: editingPost.img,
-        category: editingPost.category,
-      });
-
-      // UI-ni yangilash
-      setPosts(posts.map((p) => (p.id === editingPost.id ? editingPost : p)));
-      setIsEditModalOpen(false);
-      alert("Muvaffaqiyatli yangilandi!");
-    } catch (error) {
-      alert("Yangilashda xatolik!");
-    }
-  };
-
   const filteredPosts = posts.filter((post) => {
-    // Qidiruv maydoni bo'yicha (Title ichidan qidiradi)
     const matchesSearch = post.title
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
-
     const matchesTab =
       activeTab === "Hammasi" ||
-      post.category === activeTab ||
       post.title.toLowerCase().includes(activeTab.toLowerCase());
-
     return matchesSearch && matchesTab;
   });
+
+  const handleAddPost = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const docRef = await addDoc(collection(db, "posts"), {
+        ...newPost,
+        createdAt: new Date().toISOString(),
+      });
+      setPosts([{ id: docRef.id, ...newPost }, ...posts]);
+      setIsAddModalOpen(false);
+      setNewPost({ title: "", desc: "", text: "", img: "" });
+    } catch (error) {
+      alert("Xatolik yuz berdi!");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm("Ushbu maqolani o'chirmoqchimisiz?")) {
+      await deleteDoc(doc(db, "posts", id));
+      setPosts(posts.filter((p) => p.id !== id));
+    }
+  };
+
+  const openEditModal = (post: Post) => {
+    setEditingPost(post);
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdate = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingPost) return;
+    try {
+      await updateDoc(doc(db, "posts", editingPost.id), {
+        title: editingPost.title,
+        desc: editingPost.desc,
+        text: editingPost.text,
+        img: editingPost.img,
+      });
+      setPosts(posts.map((p) => (p.id === editingPost.id ? editingPost : p)));
+      setIsEditModalOpen(false);
+    } catch (error) {
+      alert("Xatolik!");
+    }
+  };
 
   return (
     <div
       style={{
-        color: "#1e293b",
         padding: "40px",
         maxWidth: "1200px",
         margin: "0 auto",
+        fontFamily: "'Inter', sans-serif",
+        backgroundColor: "#f8fafc",
+        minHeight: "100vh",
       }}
     >
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
-          backgroundColor: "white",
-          padding: "15px 25px",
-          borderRadius: "20px",
-          marginBottom: "35px",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.02)",
-          flexWrap: "wrap",
           gap: "20px",
+          marginBottom: "40px",
+          flexWrap: "wrap",
+          backgroundColor: "#fff",
+          padding: "20px",
+          borderRadius: "20px",
+          boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            gap: "10px",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveTab(cat)}
+              className="category-btn"
               style={{
-                padding: "10px 18px",
+                padding: "10px 22px",
                 borderRadius: "12px",
                 border: "none",
                 cursor: "pointer",
-                backgroundColor: activeTab === cat ? "#6366f1" : "#f1f5f9",
-                color: activeTab === cat ? "white" : "#64748b",
+                backgroundColor: activeTab === cat ? "#4f46e5" : "#f1f5f9",
+                color: activeTab === cat ? "#fff" : "#64748b",
                 fontWeight: "600",
-                transition: "0.3s",
+                transition: "all 0.3s ease",
               }}
             >
               {cat}
             </button>
           ))}
+        </div>
+        <div style={{ display: "flex", gap: "12px" }}>
           <input
             type="text"
-            placeholder="Sarlavha bo'yicha qidirish..."
+            placeholder="Sarlavhadan qidirish..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
-              padding: "10px 15px",
+              padding: "12px 16px",
               borderRadius: "12px",
               border: "1px solid #e2e8f0",
+              width: "280px",
               outline: "none",
-              width: "250px",
+              transition: "border 0.3s",
             }}
+            onFocus={(e) => (e.target.style.borderColor = "#4f46e5")}
+            onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
           />
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="add-btn"
+            style={{
+              backgroundColor: "#10b981",
+              color: "#fff",
+              border: "none",
+              padding: "12px 24px",
+              borderRadius: "12px",
+              fontWeight: "600",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+            }}
+          >
+            + Qo'shish
+          </button>
         </div>
-        <button
-          style={{
-            backgroundColor: "#10b981",
-            color: "white",
-            padding: "12px 24px",
-            borderRadius: "14px",
-            border: "none",
-            fontWeight: "700",
-            cursor: "pointer",
-          }}
-        >
-          + Maqola qo'shish
-        </button>
       </div>
-
-      <h1 style={{ fontSize: "42px", fontWeight: "800", marginBottom: "40px" }}>
-        {activeTab === "Hammasi" ? "Barcha Maqolalar" : `${activeTab} bo'limi`}
-      </h1>
 
       <div
         style={{
@@ -193,34 +200,52 @@ export default function Maqola() {
         }}
       >
         {loading ? (
-          <p>Yuklanmoqda...</p>
-        ) : filteredPosts.length > 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              gridColumn: "1/-1",
+              padding: "50px",
+              color: "#64748b",
+            }}
+          >
+            Yuklanmoqda...
+          </div>
+        ) : (
           filteredPosts.map((post) => (
             <div
               key={post.id}
               className="post-card"
               style={{
-                backgroundColor: "white",
-                borderRadius: "28px",
+                border: "none",
+                borderRadius: "24px",
                 overflow: "hidden",
-                boxShadow: "0 15px 35px rgba(0,0,0,0.04)",
-                border: "1px solid #f1f5f9",
+                backgroundColor: "#fff",
                 display: "flex",
                 flexDirection: "column",
+                transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                boxShadow:
+                  "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
               }}
             >
-              <img
-                src={post.img || "https://via.placeholder.com/400x220"}
-                alt={post.title}
-                style={{ width: "100%", height: "220px", objectFit: "cover" }}
-              />
-              <div style={{ padding: "25px", flexGrow: 1 }}>
-
+              <div style={{ overflow: "hidden", height: "220px" }}>
+                <img
+                  src={post.img || "https://via.placeholder.com/400x200"}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    transition: "transform 0.5s",
+                  }}
+                  className="card-img"
+                />
+              </div>
+              <div style={{ padding: "24px", flexGrow: 1 }}>
                 <h3
                   style={{
+                    margin: "0 0 12px 0",
                     fontSize: "20px",
+                    color: "#1e293b",
                     fontWeight: "700",
-                    margin: "10px 0",
                   }}
                 >
                   {post.title}
@@ -228,43 +253,53 @@ export default function Maqola() {
                 <p
                   style={{
                     color: "#64748b",
-                    fontSize: "14px",
-                    height: "60px",
-                    overflow: "hidden",
+                    fontSize: "15px",
+                    lineHeight: "1.6",
+                    marginBottom: "20px",
                   }}
                 >
                   {post.desc}
                 </p>
                 <div
-                  style={{ display: "flex", gap: "12px", marginTop: "20px" }}
+                  style={{ marginTop: "auto", display: "flex", gap: "12px" }}
                 >
                   <button
                     onClick={() => openEditModal(post)}
                     style={{
                       flex: 1,
-                      padding: "12px",
-                      borderRadius: "12px",
+                      padding: "10px",
+                      borderRadius: "10px",
                       border: "none",
                       backgroundColor: "#3b82f6",
-                      color: "white",
-                      fontWeight: "700",
+                      color: "#fff",
                       cursor: "pointer",
+                      fontWeight: "600",
+                      transition: "opacity 0.2s",
                     }}
+                    onMouseOver={(e) => (e.currentTarget.style.opacity = "0.9")}
+                    onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
                   >
-                    Tahrirlash
+                    Tahrir
                   </button>
                   <button
                     onClick={() => handleDelete(post.id)}
                     style={{
                       flex: 1,
-                      padding: "12px",
-                      borderRadius: "12px",
+                      padding: "10px",
+                      borderRadius: "10px",
                       border: "none",
                       backgroundColor: "#fee2e2",
                       color: "#ef4444",
-                      fontWeight: "700",
                       cursor: "pointer",
+                      fontWeight: "600",
+                      transition: "background 0.2s",
                     }}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#fecaca")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.backgroundColor = "#fee2e2")
+                    }
                   >
                     O'chirish
                   </button>
@@ -272,146 +307,113 @@ export default function Maqola() {
               </div>
             </div>
           ))
-        ) : (
-          <p
-            style={{
-              gridColumn: "1/-1",
-              textAlign: "center",
-              color: "#64748b",
-            }}
-          >
-            Ma'lumot topilmadi...
-          </p>
         )}
       </div>
 
-      {isEditModalOpen && editingPost && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-            backdropFilter: "blur(4px)",
-          }}
-        >
+      {(isAddModalOpen || isEditModalOpen) && (
+        <div className="modal-overlay">
           <div
-            style={{
-              backgroundColor: "white",
-              padding: "40px",
-              borderRadius: "24px",
-              width: "500px",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
-            }}
+            className="modal-content"
+            style={{ animation: "slideUp 0.4s ease-out" }}
           >
-            <h2 style={{ marginBottom: "20px" }}>Maqolani tahrirlash</h2>
-            <form
-              onSubmit={handleUpdate}
-              style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+            <h3
+              style={{
+                marginBottom: "20px",
+                fontSize: "24px",
+                color: "#1e293b",
+              }}
             >
-              <label style={{ fontSize: "14px", fontWeight: "600" }}>
-                Sarlavha
-              </label>
+              {isAddModalOpen ? "Yangi Maqola" : "Tahrirlash"}
+            </h3>
+            <form
+              onSubmit={isAddModalOpen ? handleAddPost : handleUpdate}
+              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+            >
               <input
                 type="text"
-                value={editingPost.title}
+                placeholder="Rasm URL"
+                value={isAddModalOpen ? newPost.img : editingPost?.img}
                 onChange={(e) =>
-                  setEditingPost({ ...editingPost, title: e.target.value })
+                  isAddModalOpen
+                    ? setNewPost({ ...newPost, img: e.target.value })
+                    : setEditingPost({ ...editingPost!, img: e.target.value })
                 }
-                style={{
-                  padding: "12px",
-                  borderRadius: "10px",
-                  border: "1px solid #ddd",
-                }}
                 required
+                className="input-style"
               />
-
-              <label style={{ fontSize: "14px", fontWeight: "600" }}>
-                Kategoriya
-              </label>
-              <select
-                value={editingPost.category}
+              <input
+                type="text"
+                placeholder="Sarlavha (Title)"
+                value={isAddModalOpen ? newPost.title : editingPost?.title}
                 onChange={(e) =>
-                  setEditingPost({ ...editingPost, category: e.target.value })
+                  isAddModalOpen
+                    ? setNewPost({ ...newPost, title: e.target.value })
+                    : setEditingPost({ ...editingPost!, title: e.target.value })
                 }
-                style={{
-                  padding: "12px",
-                  borderRadius: "10px",
-                  border: "1px solid #ddd",
-                  backgroundColor: "white",
-                }}
-              >
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-
-              <label style={{ fontSize: "14px", fontWeight: "600" }}>
-                Qisqa tavsif
-              </label>
+                required
+                className="input-style"
+              />
+              <input
+                type="text"
+                placeholder="Qisqa tavsif (Desc)"
+                value={isAddModalOpen ? newPost.desc : editingPost?.desc}
+                onChange={(e) =>
+                  isAddModalOpen
+                    ? setNewPost({ ...newPost, desc: e.target.value })
+                    : setEditingPost({ ...editingPost!, desc: e.target.value })
+                }
+                required
+                className="input-style"
+              />
               <textarea
-                value={editingPost.desc}
+                placeholder="To'liq matn (Text)"
+                value={isAddModalOpen ? newPost.text : editingPost?.text}
                 onChange={(e) =>
-                  setEditingPost({ ...editingPost, desc: e.target.value })
+                  isAddModalOpen
+                    ? setNewPost({ ...newPost, text: e.target.value })
+                    : setEditingPost({ ...editingPost!, text: e.target.value })
                 }
-                style={{
-                  padding: "12px",
-                  borderRadius: "10px",
-                  border: "1px solid #ddd",
-                  height: "80px",
-                }}
                 required
+                className="input-style"
+                style={{ height: "120px", resize: "none" }}
               />
-
-              <label style={{ fontSize: "14px", fontWeight: "600" }}>
-                Rasm manzili (URL)
-              </label>
-              <input
-                type="text"
-                value={editingPost.img}
-                onChange={(e) =>
-                  setEditingPost({ ...editingPost, img: e.target.value })
-                }
-                style={{
-                  padding: "12px",
-                  borderRadius: "10px",
-                  border: "1px solid #ddd",
-                }}
-              />
-
-              <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+              <div style={{ display: "flex", gap: "12px", marginTop: "10px" }}>
                 <button
                   type="submit"
                   style={{
                     flex: 1,
-                    padding: "12px",
-                    backgroundColor: "#6366f1",
-                    color: "white",
-                    borderRadius: "10px",
+                    padding: "14px",
                     border: "none",
+                    backgroundColor: isAddModalOpen ? "#10b981" : "#3b82f6",
+                    color: "#fff",
+                    borderRadius: "12px",
+                    fontWeight: "700",
                     cursor: "pointer",
-                    fontWeight: "bold",
+                    transition: "transform 0.2s",
                   }}
+                  onMouseDown={(e) =>
+                    (e.currentTarget.style.transform = "scale(0.98)")
+                  }
+                  onMouseUp={(e) =>
+                    (e.currentTarget.style.transform = "scale(1)")
+                  }
                 >
-                  Saqlash
+                  {isAddModalOpen ? "Saqlash" : "Yangilash"}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsEditModalOpen(false)}
+                  onClick={() => {
+                    setIsAddModalOpen(false);
+                    setIsEditModalOpen(false);
+                  }}
                   style={{
                     flex: 1,
-                    padding: "12px",
-                    backgroundColor: "#eee",
-                    borderRadius: "10px",
+                    padding: "14px",
                     border: "none",
+                    backgroundColor: "#f1f5f9",
+                    color: "#64748b",
+                    borderRadius: "12px",
+                    fontWeight: "600",
                     cursor: "pointer",
                   }}
                 >
@@ -424,11 +426,64 @@ export default function Maqola() {
       )}
 
       <style jsx>{`
-        .post-card {
-          transition: 0.3s;
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(15, 23, 42, 0.6);
+          backdrop-filter: blur(8px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+        .modal-content {
+          background: #fff;
+          padding: 40px;
+          border-radius: 28px;
+          width: 100%;
+          max-width: 500px;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .input-style {
+          padding: 14px;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          outline: none;
+          font-size: 15px;
+          transition: all 0.3s;
+        }
+        .input-style:focus {
+          border-color: #4f46e5;
+          box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
         }
         .post-card:hover {
-          transform: translateY(-10px);
+          transform: translateY(-12px);
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+            0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .post-card:hover .card-img {
+          transform: scale(1.08);
+        }
+        .category-btn:hover {
+          background-color: #e2e8f0;
+          transform: translateY(-2px);
+        }
+        .add-btn:hover {
+          background-color: #059669;
+          box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       `}</style>
     </div>

@@ -2,6 +2,10 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { db } from "@/app/firebase/firebase.config";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+
+// Rasmlar
 import frame1 from "../image/Frame1.png";
 import frame4 from "../image/Frame4.png";
 import frame2 from "../image/frame2.jpg";
@@ -17,7 +21,6 @@ export default function ContactUz() {
   });
 
   const [status, setStatus] = useState({ type: "", msg: "" });
-
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
 
   const theme = {
@@ -38,7 +41,7 @@ export default function ContactUz() {
     setStatus({ type: "", msg: "" });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) {
       setStatus({
@@ -47,11 +50,32 @@ export default function ContactUz() {
       });
       return;
     }
-    setStatus({
-      type: "success",
-      msg: "Rahmat! Xabaringiz muvaffaqiyatli qabul qilindi. Tez orada bog'lanamiz.",
-    });
-    setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+
+    try {
+      // FIREBASEGA YUBORISH (Sizning bazangizdagi maydon nomlariga moslab)
+      await addDoc(collection(db, "foydalanuvchilar"), {
+        ism: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        hamkorlik: formData.subject,
+        xabar: formData.message,
+        createdAt: serverTimestamp(), // Vaqt bo'yicha tartiblash uchun
+      });
+
+      setStatus({
+        type: "success",
+        msg: "Rahmat! Xabaringiz muvaffaqiyatli yuborildi.",
+      });
+
+      // Formani tozalash
+      setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+    } catch (error) {
+      console.error("Xatolik:", error);
+      setStatus({
+        type: "error",
+        msg: "Xatolik yuz berdi. Qayta urinib ko'ring.",
+      });
+    }
   };
 
   return (
@@ -249,7 +273,7 @@ export default function ContactUz() {
                 value={formData.name}
                 onChange={handleChange}
                 type="text"
-                placeholder="name..."
+                placeholder="Ismingiz..."
                 style={inputStyle}
               />
             </div>
@@ -260,7 +284,7 @@ export default function ContactUz() {
                 value={formData.email}
                 onChange={handleChange}
                 type="email"
-                placeholder="email..."
+                placeholder="Email..."
                 style={inputStyle}
               />
             </div>
@@ -271,7 +295,7 @@ export default function ContactUz() {
                 value={formData.phone}
                 onChange={handleChange}
                 type="text"
-                placeholder="phone..."
+                placeholder="Telefon..."
                 style={inputStyle}
               />
             </div>
@@ -282,7 +306,7 @@ export default function ContactUz() {
                 value={formData.subject}
                 onChange={handleChange}
                 type="text"
-                placeholder="Hamkorlik"
+                placeholder="Mavzu..."
                 style={inputStyle}
               />
             </div>
