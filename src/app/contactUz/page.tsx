@@ -5,7 +5,6 @@ import Image from "next/image";
 import { db } from "@/app/firebase/firebase.config";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
-// Rasmlar
 import frame1 from "../image/Frame1.png";
 import frame4 from "../image/Frame4.png";
 import frame2 from "../image/frame2.jpg";
@@ -52,14 +51,13 @@ export default function ContactUz() {
     }
 
     try {
-      // FIREBASEGA YUBORISH (Sizning bazangizdagi maydon nomlariga moslab)
       await addDoc(collection(db, "foydalanuvchilar"), {
         ism: formData.name,
         email: formData.email,
         phone: formData.phone,
         hamkorlik: formData.subject,
         xabar: formData.message,
-        createdAt: serverTimestamp(), // Vaqt bo'yicha tartiblash uchun
+        createdAt: serverTimestamp(),
       });
 
       setStatus({
@@ -67,7 +65,6 @@ export default function ContactUz() {
         msg: "Rahmat! Xabaringiz muvaffaqiyatli yuborildi.",
       });
 
-      // Formani tozalash
       setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
     } catch (error) {
       console.error("Xatolik:", error);
@@ -87,6 +84,13 @@ export default function ContactUz() {
         fontFamily: "'Inter', sans-serif",
       }}
     >
+      <style>{`
+        .footer-link { color: #1a1a1a; text-decoration: none; font-weight: 500; font-size: 15px; transition: 0.3s; }
+        .footer-link:hover { color: #7c4dff; }
+        .social-icon { width: 35px; height: 35px; background: #7c4dff; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; text-decoration: none; font-size: 12px; font-weight: bold; transition: 0.3s; }
+        .social-icon:hover { opacity: 0.8; transform: translateY(-3px); }
+      `}</style>
+
       <div style={{ textAlign: "center", padding: "80px 20px 60px" }}>
         <h1
           style={{
@@ -347,9 +351,196 @@ export default function ContactUz() {
           </form>
         </div>
       </div>
+
+      <footer
+        style={{
+          backgroundColor: "#ffffff",
+          padding: "80px 0 40px",
+          borderTop: "1px solid #f1f5f9",
+        }}
+      >
+        <div style={newsletterBoxStyle}>
+          <div style={newsletterContentStyle}>
+            <h2
+              style={{
+                fontSize: "clamp(24px, 4vw, 36px)",
+                fontWeight: "bold",
+                margin: "0 0 20px",
+              }}
+            >
+              Bizning hikoyalarimizni bizdan har hafta pochta qutingizga olib
+              boring.
+            </h2>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "15px",
+                justifyContent: "center",
+                marginBottom: "20px",
+              }}
+            >
+              <input
+                type="email"
+                placeholder="Your Email"
+                style={emailInputStyle}
+              />
+              <button style={getStartedButtonStyle}>Get started</button>
+            </div>
+            <p
+              style={{
+                fontSize: "14px",
+                opacity: 0.8,
+                maxWidth: "600px",
+                margin: "0 auto",
+              }}
+            >
+              Get a response tomorrow if you submit by 9pm today. If we received
+              after 9pm will get a reponse the following day.
+            </p>
+          </div>
+        </div>
+
+        <div
+          style={{
+            maxWidth: "1140px",
+            margin: "0 auto",
+            textAlign: "center",
+            padding: "0 20px",
+          }}
+        >
+          <div
+            style={{
+              marginBottom: "30px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "10px",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: "#7c4dff",
+                width: "40px",
+                height: "40px",
+                borderRadius: "10px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span
+                style={{ color: "white", fontWeight: "bold", fontSize: "20px" }}
+              >
+                Z
+              </span>
+            </div>
+            <span
+              style={{ fontSize: "24px", fontWeight: "bold", color: "#1a1a1a" }}
+            >
+              Zarrin
+            </span>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "clamp(20px, 5vw, 40px)",
+              flexWrap: "wrap",
+              marginBottom: "40px",
+            }}
+          >
+            <a href="#" className="footer-link">
+              Home
+            </a>
+            <a href="#" className="footer-link">
+              Blog
+            </a>
+            <a href="#" className="footer-link">
+              About
+            </a>
+            <a href="#" className="footer-link">
+              Contact Us
+            </a>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "15px",
+              marginBottom: "40px",
+            }}
+          >
+            <a href="#" className="social-icon">
+              FB
+            </a>
+            <a href="#" className="social-icon">
+              IG
+            </a>
+            <a href="#" className="social-icon">
+              LN
+            </a>
+            <a href="#" className="social-icon">
+              YT
+            </a>
+          </div>
+
+          <div
+            style={{
+              height: "1px",
+              backgroundColor: "#e2e8f0",
+              width: "100%",
+              marginBottom: "30px",
+            }}
+          ></div>
+
+          <p style={{ color: "#64748b", fontSize: "14px" }}>
+            Copyright Ideapeel Inc © 2023. All Right Reserved
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
+
+const newsletterBoxStyle: React.CSSProperties = {
+  maxWidth: "1140px",
+  margin: "0 auto 80px",
+  backgroundColor: "#7c4dff",
+  borderRadius: "30px",
+  padding: "80px 20px",
+  color: "white",
+  textAlign: "center",
+  backgroundImage:
+    "radial-gradient(circle at 10% 20%, rgba(255,255,255,0.1) 0%, transparent 20%), radial-gradient(circle at 90% 80%, rgba(255,255,255,0.1) 0%, transparent 20%)",
+};
+
+const newsletterContentStyle: React.CSSProperties = {
+  maxWidth: "800px",
+  margin: "0 auto",
+};
+
+const emailInputStyle: React.CSSProperties = {
+  padding: "15px 25px",
+  borderRadius: "10px",
+  border: "none",
+  width: "100%",
+  maxWidth: "350px",
+  fontSize: "16px",
+};
+
+const getStartedButtonStyle: React.CSSProperties = {
+  backgroundColor: "white",
+  color: "#7c4dff",
+  border: "none",
+  borderRadius: "10px",
+  padding: "15px 35px",
+  fontWeight: "bold",
+  fontSize: "16px",
+  cursor: "pointer",
+};
 
 const inputContainerStyle: React.CSSProperties = {
   display: "flex",

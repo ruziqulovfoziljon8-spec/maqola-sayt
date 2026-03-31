@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react"; // Suspense qo'shildi
+import { useSearchParams } from "next/navigation"; // useSearchParams qo'shildi
 import { db } from "@/app/firebase/firebase.config";
 import {
   collection,
@@ -22,7 +23,10 @@ interface Post {
   views: number;
 }
 
-export default function Blog() {
+function BlogContent() {
+  const searchParams = useSearchParams(); // URL'dan search parametrni olish
+  const searchQuery = searchParams.get("search")?.toLowerCase() || "";
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activePost, setActivePost] = useState<Post | null>(null);
@@ -68,9 +72,15 @@ export default function Blog() {
     fetchPosts();
   }, []);
 
+  const filteredPosts = posts.filter((post) => {
+    return (
+      post.title?.toLowerCase().includes(searchQuery) ||
+      post.desc?.toLowerCase().includes(searchQuery)
+    );
+  });
+
   const handleOpenPost = async (post: Post) => {
     setActivePost(post);
-    // Faqat bazadan kelgan postlar uchun viewni oshiramiz
     if (post.id !== "hero-special") {
       try {
         const postRef = doc(db, "posts", post.id);
@@ -154,9 +164,13 @@ export default function Blog() {
         .heart-active { color: #ff4d4d !important; }
         .read-more-btn { color: #7c4dff; fontWeight: 700; fontSize: 16px; cursor: pointer; transition: 0.3s; }
         .read-more-btn:hover { opacity: 0.7; text-decoration: underline; }
+        .footer-link { color: #1a1a1a; text-decoration: none; font-weight: 500; font-size: 15px; }
+        .footer-link:hover { color: #7c4dff; }
+        .social-icon { width: 35px; height: 35px; background: #7c4dff; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; text-decoration: none; font-size: 12px; font-weight: bold; }
       `}</style>
 
-      {!showAll && (
+      {/* Hero faqat qidiruv bo'lmaganda ko'rinadi */}
+      {!showAll && !searchQuery && (
         <div
           style={{
             maxWidth: "1400px",
@@ -211,7 +225,7 @@ export default function Blog() {
         style={{
           maxWidth: "1400px",
           margin: "0 auto",
-          padding: showAll ? "100px 5% 60px" : "60px 5%",
+          padding: showAll || searchQuery ? "100px 5% 60px" : "60px 5%",
         }}
       >
         <div
@@ -230,23 +244,27 @@ export default function Blog() {
               margin: 0,
             }}
           >
-            {showAll ? "Barcha maqolalar" : "So'nggi maqolalar"}
+            {searchQuery
+              ? `"${searchQuery}" bo'yicha natijalar`
+              : showAll
+              ? "Barcha maqolalar"
+              : "So'nggi maqolalar"}
           </h2>
           <button
             onClick={() => setShowAll(!showAll)}
             style={viewAllButtonStyle}
           >
-            {showAll ? "Asosiyga qaytish" : "Hammasini ko'rish"}
+            {showAll ? "Asosiyga qaytish" : "View All"}
           </button>
         </div>
 
         {loading ? (
           <div style={{ textAlign: "center", padding: "50px" }}>
-            <h2>Yuklanmoqda...</h2>
+            <h2>Malumotlar yuklanmoqda...</h2>
           </div>
         ) : (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "40px 2.5%" }}>
-            {posts.map((post) => (
+            {(searchQuery ? filteredPosts : posts).map((post) => (
               <div key={post.id} className="blog-card" style={cardStyle}>
                 <div
                   style={{ width: "100%", height: "260px", overflow: "hidden" }}
@@ -337,12 +355,200 @@ export default function Blog() {
                 </div>
               </div>
             ))}
+            {searchQuery && filteredPosts.length === 0 && (
+              <p
+                style={{ textAlign: "center", width: "100%", fontSize: "18px" }}
+              >
+                Hech narsa topilmadi...
+              </p>
+            )}
           </div>
         )}
       </div>
+
+      <footer style={{ backgroundColor: "#ffffff", padding: "80px 0 40px" }}>
+        <div style={newsletterBoxStyle}>
+          <div style={newsletterContentStyle}>
+            <h2
+              style={{
+                fontSize: "36px",
+                fontWeight: "bold",
+                margin: "0 0 20px",
+              }}
+            >
+              Bizning hikoyalarimizni bizdan har hafta pochta qutingizga olib
+              boring.
+            </h2>
+            <div
+              style={{
+                display: "flex",
+                gap: "15px",
+                justifyContent: "center",
+                marginBottom: "20px",
+              }}
+            >
+              <input
+                type="email"
+                placeholder="Your Email"
+                style={emailInputStyle}
+              />
+              <button style={getStartedButtonStyle}>Get started</button>
+            </div>
+            <p
+              style={{
+                fontSize: "14px",
+                opacity: 0.8,
+                maxWidth: "600px",
+                margin: "0 auto",
+              }}
+            >
+              Get a response tomorrow if you submit by 9pm today. If we received
+              after 9pm will get a reponse the following day.
+            </p>
+          </div>
+        </div>
+
+        <div
+          style={{ maxWidth: "1400px", margin: "0 auto", textAlign: "center" }}
+        >
+          <div
+            style={{
+              marginBottom: "30px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "10px",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: "#7c4dff",
+                width: "40px",
+                height: "40px",
+                borderRadius: "10px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span
+                style={{ color: "white", fontWeight: "bold", fontSize: "20px" }}
+              >
+                Z
+              </span>
+            </div>
+            <span
+              style={{ fontSize: "24px", fontWeight: "bold", color: "#1a1a1a" }}
+            >
+              Zarrin
+            </span>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "40px",
+              marginBottom: "40px",
+            }}
+          >
+            <a href="#" className="footer-link">
+              Home
+            </a>
+            <a href="#" className="footer-link">
+              Blog
+            </a>
+            <a href="#" className="footer-link">
+              About
+            </a>
+            <a href="#" className="footer-link">
+              Contact Us
+            </a>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "15px",
+              marginBottom: "40px",
+            }}
+          >
+            <a href="#" className="social-icon">
+              FB
+            </a>
+            <a href="#" className="social-icon">
+              IG
+            </a>
+            <a href="#" className="social-icon">
+              LN
+            </a>
+            <a href="#" className="social-icon">
+              YT
+            </a>
+          </div>
+
+          <div
+            style={{
+              height: "1px",
+              backgroundColor: "#e2e8f0",
+              width: "90%",
+              margin: "0 auto 30px",
+            }}
+          ></div>
+
+          <p style={{ color: "#64748b", fontSize: "14px" }}>
+            Copyright Ideapeel Inc © 2023. All Right Reserved
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
+
+export default function Blog() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BlogContent />
+    </Suspense>
+  );
+}
+
+const newsletterBoxStyle: any = {
+  maxWidth: "1300px",
+  margin: "0 auto 80px",
+  backgroundColor: "#7c4dff",
+  borderRadius: "30px",
+  padding: "80px 40px",
+  color: "white",
+  textAlign: "center",
+  backgroundImage:
+    "radial-gradient(circle at 10% 20%, rgba(255,255,255,0.1) 0%, transparent 20%), radial-gradient(circle at 90% 80%, rgba(255,255,255,0.1) 0%, transparent 20%)",
+};
+
+const newsletterContentStyle: any = {
+  maxWidth: "800px",
+  margin: "0 auto",
+};
+
+const emailInputStyle: any = {
+  padding: "15px 25px",
+  borderRadius: "10px",
+  border: "none",
+  width: "350px",
+  fontSize: "16px",
+};
+
+const getStartedButtonStyle: any = {
+  backgroundColor: "white",
+  color: "#7c4dff",
+  border: "none",
+  borderRadius: "10px",
+  padding: "0 35px",
+  fontWeight: "bold",
+  fontSize: "16px",
+  cursor: "pointer",
+};
 
 const heroCardStyle: any = {
   width: "100%",

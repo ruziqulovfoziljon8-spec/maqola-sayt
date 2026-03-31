@@ -1,9 +1,6 @@
-
 "use client";
 import about from "../imagess/about1.png";
-
 import React, { useState } from "react";
-
 
 export default function About() {
   const [activeCard, setActiveCard] = useState<number>(1);
@@ -24,9 +21,14 @@ export default function About() {
         minHeight: "100vh",
         fontFamily: "'Inter', sans-serif",
         color: colors.dark,
-        paddingBottom: "100px",
       }}
     >
+      <style>{`
+        .footer-link { color: #1a1a1a; text-decoration: none; font-weight: 500; font-size: 15px; transition: 0.3s; }
+        .footer-link:hover { color: #7c4dff; }
+        .social-icon { width: 35px; height: 35px; background: #7c4dff; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; text-decoration: none; font-size: 12px; font-weight: bold; transition: 0.3s; }
+        .social-icon:hover { opacity: 0.8; transform: translateY(-3px); }
+      `}</style>
 
       <div
         style={{ maxWidth: "1140px", margin: "0 auto", padding: "80px 20px" }}
@@ -83,7 +85,6 @@ export default function About() {
             backgroundColor: "#f0f0f0",
           }}
         >
-
           <img
             src={about.src}
             alt="Jamoaviy ish"
@@ -132,6 +133,7 @@ export default function About() {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
             gap: "30px",
+            marginBottom: "100px",
           }}
         >
           {[
@@ -215,6 +217,187 @@ export default function About() {
           ))}
         </div>
       </div>
+
+      <footer style={{ backgroundColor: "#ffffff", padding: "80px 0 40px" }}>
+        <div style={newsletterBoxStyle}>
+          <div style={newsletterContentStyle}>
+            <h2
+              style={{
+                fontSize: "clamp(24px, 4vw, 36px)",
+                fontWeight: "bold",
+                margin: "0 0 20px",
+              }}
+            >
+              Bizning hikoyalarimizni bizdan har hafta pochta qutingizga olib
+              boring.
+            </h2>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "15px",
+                justifyContent: "center",
+                marginBottom: "20px",
+              }}
+            >
+              <input
+                type="email"
+                placeholder="Your Email"
+                style={emailInputStyle}
+              />
+              <button style={getStartedButtonStyle}>Get started</button>
+            </div>
+            <p
+              style={{
+                fontSize: "14px",
+                opacity: 0.8,
+                maxWidth: "600px",
+                margin: "0 auto",
+              }}
+            >
+              Get a response tomorrow if you submit by 9pm today. If we received
+              after 9pm will get a reponse the following day.
+            </p>
+          </div>
+        </div>
+
+        <div
+          style={{
+            maxWidth: "1140px",
+            margin: "0 auto",
+            textAlign: "center",
+            padding: "0 20px",
+          }}
+        >
+          <div
+            style={{
+              marginBottom: "30px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "10px",
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: "#7c4dff",
+                width: "40px",
+                height: "40px",
+                borderRadius: "10px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span
+                style={{ color: "white", fontWeight: "bold", fontSize: "20px" }}
+              >
+                Z
+              </span>
+            </div>
+            <span
+              style={{ fontSize: "24px", fontWeight: "bold", color: "#1a1a1a" }}
+            >
+              Zarrin
+            </span>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "clamp(20px, 5vw, 40px)",
+              flexWrap: "wrap",
+              marginBottom: "40px",
+            }}
+          >
+            <a href="#" className="footer-link">
+              Home
+            </a>
+            <a href="#" className="footer-link">
+              Blog
+            </a>
+            <a href="#" className="footer-link">
+              About
+            </a>
+            <a href="#" className="footer-link">
+              Contact Us
+            </a>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              gap: "15px",
+              marginBottom: "40px",
+            }}
+          >
+            <a href="#" className="social-icon">
+              FB
+            </a>
+            <a href="#" className="social-icon">
+              IG
+            </a>
+            <a href="#" className="social-icon">
+              LN
+            </a>
+            <a href="#" className="social-icon">
+              YT
+            </a>
+          </div>
+
+          <div
+            style={{
+              height: "1px",
+              backgroundColor: "#e2e8f0",
+              width: "100%",
+              marginBottom: "30px",
+            }}
+          ></div>
+
+          <p style={{ color: "#64748b", fontSize: "14px" }}>
+            Copyright Ideapeel Inc © 2023. All Right Reserved
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
+
+const newsletterBoxStyle: React.CSSProperties = {
+  maxWidth: "1140px",
+  margin: "0 auto 80px",
+  backgroundColor: "#7c4dff",
+  borderRadius: "30px",
+  padding: "80px 20px",
+  color: "white",
+  textAlign: "center",
+  backgroundImage:
+    "radial-gradient(circle at 10% 20%, rgba(255,255,255,0.1) 0%, transparent 20%), radial-gradient(circle at 90% 80%, rgba(255,255,255,0.1) 0%, transparent 20%)",
+};
+
+const newsletterContentStyle: React.CSSProperties = {
+  maxWidth: "800px",
+  margin: "0 auto",
+};
+
+const emailInputStyle: React.CSSProperties = {
+  padding: "15px 25px",
+  borderRadius: "10px",
+  border: "none",
+  width: "100%",
+  maxWidth: "350px",
+  fontSize: "16px",
+};
+
+const getStartedButtonStyle: React.CSSProperties = {
+  backgroundColor: "white",
+  color: "#7c4dff",
+  border: "none",
+  borderRadius: "10px",
+  padding: "15px 35px",
+  fontWeight: "bold",
+  fontSize: "16px",
+  cursor: "pointer",
+};
