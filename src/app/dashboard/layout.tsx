@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -9,37 +9,60 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
 
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 1024;
+      setIsMobile(mobile);
+      setIsOpen(!mobile);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setIsOpen(false);
+    }
+  };
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "#f8fafc" }}>
-      
+    <div
+      style={{
+        display: "flex",
+        minHeight: "100vh",
+        backgroundColor: "#f8fafc",
+        position: "relative",
+      }}
+    >
       <aside
         style={{
-          width: isOpen ? "280px" : "100px",
+          width: isOpen ? "280px" : isMobile ? "0px" : "100px",
           backgroundColor: "#0f172a",
           transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
           display: "flex",
           flexDirection: "column",
-          padding: "25px 15px",
+          padding: isOpen ? "25px 15px" : isMobile ? "0px" : "25px 10px",
           color: "white",
           flexShrink: 0,
           overflow: "hidden",
-          boxShadow: "10px 10px 40px rgba(0,0,0,0.15)",
-          
-          position: "fixed", 
-          top: "100px",    
-          left: "20px",   
-          bottom: "30px", 
-          borderRadius: "24px",
-          zIndex: 100,
+          boxShadow: isOpen ? "10px 0 40px rgba(0,0,0,0.15)" : "none",
+
+          position: isMobile ? "fixed" : "sticky",
+          top: isMobile ? "0" : "20px",
+          left: isMobile ? (isOpen ? "0" : "-300px") : "20px",
+          height: isMobile ? "100vh" : "calc(100vh - 40px)",
+          bottom: "20px",
+          borderRadius: isMobile ? "0px" : "24px",
+          zIndex: 1000,
         }}
       >
-        
         <div
-          onClick={() => setIsOpen(!isOpen)}
-          className="logo-container"
+          onClick={() => !isMobile && setIsOpen(!isOpen)}
           style={{
             cursor: "pointer",
             display: "flex",
@@ -62,12 +85,31 @@ export default function DashboardLayout({
             }}
           >
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.8" />
-              <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
+              <path
+                d="M12 2L2 7L12 12L22 7L12 2Z"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M2 17L12 22L22 17"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity="0.8"
+              />
+              <path
+                d="M2 12L12 17L22 12"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity="0.5"
+              />
             </svg>
           </div>
-
           <span
             style={{
               fontWeight: "800",
@@ -81,49 +123,116 @@ export default function DashboardLayout({
           </span>
         </div>
 
-        <nav
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-            opacity: isOpen ? 1 : 0,
-            visibility: isOpen ? "visible" : "hidden",
-            transition: "0.3s",
-          }}
-        >
-          <Link href="/dashboard/maqola" className={`nav-item ${pathname === "/dashboard/maqola" ? "active" : ""}`}>
+        <nav style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <Link
+            href="/dashboard/maqola"
+            className={`nav-item ${
+              pathname === "/dashboard/maqola" ? "active" : ""
+            }`}
+            onClick={handleLinkClick}
+          >
             <span className="icon">📝</span>
-            <span className="text">Maqolalar</span>
+            {(isOpen || isMobile) && <span className="text">Maqolalar</span>}
           </Link>
 
-          <Link href="/dashboard/foydalanuvchi" className={`nav-item ${pathname === "/dashboard/foydalanuvchi" ? "active" : ""}`}>
+          <Link
+            href="/dashboard/foydalanuvchi"
+            className={`nav-item ${
+              pathname === "/dashboard/foydalanuvchi" ? "active" : ""
+            }`}
+            onClick={handleLinkClick} 
+          >
             <span className="icon">👥</span>
-            <span className="text">Foydalanuvchilar</span>
+            {(isOpen || isMobile) && (
+              <span className="text">Foydalanuvchilar</span>
+            )}
           </Link>
         </nav>
       </aside>
 
-      <main 
-        style={{ 
-          flex: 1, 
-          padding: "30px", 
-          marginLeft: isOpen ? "310px" : "130px", 
-          transition: "margin-left 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          minWidth: 0,
         }}
       >
-        <div
+        {isMobile && (
+          <header
+            style={{
+              height: "70px",
+              backgroundColor: "white",
+              display: "flex",
+              alignItems: "center",
+              padding: "0 20px",
+              borderBottom: "1px solid #e2e8f0",
+              position: "sticky",
+              top: 0,
+              zIndex: 50,
+            }}
+          >
+            <button
+              onClick={() => setIsOpen(true)}
+              style={{
+                background: "#6366f1",
+                border: "none",
+                color: "white",
+                padding: "8px 12px",
+                borderRadius: "10px",
+                fontSize: "20px",
+                cursor: "pointer",
+              }}
+            >
+              ☰
+            </button>
+            <span
+              style={{
+                marginLeft: "15px",
+                fontWeight: "700",
+                color: "#0f172a",
+              }}
+            >
+              Dashboard
+            </span>
+          </header>
+        )}
+
+        <main
           style={{
-            backgroundColor: "#ffffff",
-            padding: "40px",
-            borderRadius: "30px",
-            minHeight: "90vh",
-            boxShadow: "0 10px 40px rgba(0, 0, 0, 0.03)",
-            border: "1px solid #f1f5f9",
+            flex: 1,
+            padding: isMobile ? "15px" : "30px",
+            marginLeft: isMobile ? "0px" : "20px",
+            transition: "0.5s",
           }}
         >
-          {children}
-        </div>
-      </main>
+          <div
+            style={{
+              backgroundColor: "#ffffff",
+              padding: isMobile ? "20px" : "40px",
+              borderRadius: isMobile ? "20px" : "30px",
+              minHeight: "calc(100vh - 80px)",
+              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.03)",
+              border: "1px solid #f1f5f9",
+            }}
+          >
+            {children}
+          </div>
+        </main>
+      </div>
+
+      {isMobile && isOpen && (
+        <div
+          onClick={() => setIsOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(15, 23, 42, 0.3)",
+            backdropFilter: "blur(4px)",
+            zIndex: 900,
+          }}
+        />
+      )}
 
       <style jsx global>{`
         .nav-item {
@@ -135,6 +244,7 @@ export default function DashboardLayout({
           color: #94a3b8;
           border-radius: 14px;
           transition: 0.3s;
+          white-space: nowrap;
         }
         .nav-item:hover {
           background-color: rgba(255, 255, 255, 0.05);
@@ -146,7 +256,18 @@ export default function DashboardLayout({
           color: white;
           box-shadow: 0 8px 15px rgba(99, 102, 241, 0.3);
         }
-        .icon { font-size: 20px; }
+        .icon {
+          font-size: 20px;
+          min-width: 24px;
+          display: flex;
+          justify-content: center;
+        }
+
+        @media (min-width: 1025px) {
+          .text {
+            display: ${isOpen ? "inline" : "none"};
+          }
+        }
       `}</style>
     </div>
   );

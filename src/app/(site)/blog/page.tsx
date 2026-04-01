@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react"; // Suspense qo'shildi
-import { useSearchParams } from "next/navigation"; // useSearchParams qo'shildi
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { db } from "@/app/firebase/firebase.config";
 import {
   collection,
@@ -24,7 +24,7 @@ interface Post {
 }
 
 function BlogContent() {
-  const searchParams = useSearchParams(); // URL'dan search parametrni olish
+  const searchParams = useSearchParams();
   const searchQuery = searchParams.get("search")?.toLowerCase() || "";
 
   const [posts, setPosts] = useState<Post[]>([]);
@@ -92,6 +92,7 @@ function BlogContent() {
         console.error("Views error:", e);
       }
     }
+    window.scrollTo(0, 0);
   };
 
   const handleLike = async (e: React.MouseEvent, postId: string) => {
@@ -125,17 +126,7 @@ function BlogContent() {
         <button onClick={() => setActivePost(null)} style={backButtonStyle}>
           ← Orqaga qaytish
         </button>
-        <h1
-          style={{
-            fontSize: "48px",
-            fontWeight: "800",
-            color: "#1a1a1a",
-            marginBottom: "30px",
-            lineHeight: "1.2",
-          }}
-        >
-          {activePost.title}
-        </h1>
+        <h1 className="active-title">{activePost.title}</h1>
         <img
           src={activePost.img}
           alt={activePost.title}
@@ -144,6 +135,7 @@ function BlogContent() {
         <div style={{ fontSize: "20px", lineHeight: "1.8", color: "#444" }}>
           <p>{activePost.text}</p>
         </div>
+        <style>{`.active-title { font-size: clamp(28px, 5vw, 48px); font-weight: 800; color: #1a1a1a; margin-bottom: 30px; }`}</style>
       </div>
     );
   }
@@ -154,22 +146,45 @@ function BlogContent() {
         backgroundColor: "#f9f9f9",
         minHeight: "100vh",
         fontFamily: "sans-serif",
+        overflowX: "hidden",
       }}
     >
       <style>{`
-        .blog-card { transition: all 0.4s ease; cursor: default; }
-        .blog-card:hover { transform: translateY(-12px); box-shadow: 0 20px 30px rgba(124, 77, 255, 0.1) !important; }
+        .blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        @media (max-width: 1100px) { .blog-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .blog-grid { grid-template-columns: 1fr; } }
+
+        .hero-card { display: flex; align-items: center; justify-content: space-between; background: #7e57e2; border-radius: 30px; padding: 60px; color: white; }
+        @media (max-width: 900px) { 
+            .hero-card { flex-direction: column; text-align: center; padding: 40px 20px; }
+            .hero-img { width: 100% !important; height: auto !important; max-width: 380px; margin-top: 30px; }
+            .hero-title { font-size: 32px !important; }
+        }
+
+        .blog-card { transition: all 0.4s ease; background: white; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 10px 20px rgba(0,0,0,0.04); }
+        .blog-card:hover { transform: translateY(-12px); box-shadow: 0 20px 30px rgba(124, 77, 255, 0.15) !important; }
+        
         .stat-badge { display: flex; align-items: center; gap: 6px; background: #ffffff; color: #475569; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid #e2e8f0; cursor: pointer; }
-        .heart-icon { color: #94a3b8; transition: 0.3s; }
         .heart-active { color: #ff4d4d !important; }
-        .read-more-btn { color: #7c4dff; fontWeight: 700; fontSize: 16px; cursor: pointer; transition: 0.3s; }
-        .read-more-btn:hover { opacity: 0.7; text-decoration: underline; }
-        .footer-link { color: #1a1a1a; text-decoration: none; font-weight: 500; font-size: 15px; }
+        .read-more-btn { color: #7c4dff; font-weight: 700; font-size: 16px; cursor: pointer; }
+        
+        .footer-link { text-decoration: none; color: #1a1a1a; font-weight: 500; transition: 0.3s; }
         .footer-link:hover { color: #7c4dff; }
-        .social-icon { width: 35px; height: 35px; background: #7c4dff; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; text-decoration: none; font-size: 12px; font-weight: bold; }
+
+        .social-icon { 
+            width: 35px; height: 35px; border-radius: 50%; background: #7c4dff; color: white; 
+            display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 14px; transition: 0.3s;
+        }
+        .social-icon:hover { transform: scale(1.1); opacity: 0.9; }
+
+        @media (max-width: 600px) {
+            .newsletter-container { flex-direction: column; width: 100%; }
+            .newsletter-input { width: 100% !important; margin-bottom: 10px; }
+            .newsletter-btn { width: 100%; }
+            .footer-nav { gap: 15px !important; }
+        }
       `}</style>
 
-      {/* Hero faqat qidiruv bo'lmaganda ko'rinadi */}
       {!showAll && !searchQuery && (
         <div
           style={{
@@ -178,9 +193,10 @@ function BlogContent() {
             padding: "100px 5% 40px",
           }}
         >
-          <div style={heroCardStyle}>
-            <div style={{ flex: 1, paddingRight: "40px", zIndex: 2 }}>
+          <div className="hero-card">
+            <div style={{ flex: 1 }}>
               <h1
+                className="hero-title"
                 style={{
                   fontSize: "52px",
                   fontWeight: "bold",
@@ -191,12 +207,7 @@ function BlogContent() {
                 {heroPost.title}
               </h1>
               <p
-                style={{
-                  fontSize: "18px",
-                  lineHeight: "1.6",
-                  marginBottom: "35px",
-                  opacity: 0.9,
-                }}
+                style={{ fontSize: "18px", opacity: 0.9, marginBottom: "35px" }}
               >
                 {heroPost.desc}
               </p>
@@ -207,15 +218,13 @@ function BlogContent() {
                 Read more
               </button>
             </div>
-            <div
-              style={{
-                flex: 1,
-                display: "flex",
-                justifyContent: "center",
-                zIndex: 2,
-              }}
-            >
-              <img src={suniy.src} alt="AI Hero" style={heroImageStyle} />
+            <div style={{ flex: 1, display: "flex", justifyContent: "center" }}>
+              <img
+                src={suniy.src}
+                alt="AI"
+                style={heroImageStyle}
+                className="hero-img"
+              />
             </div>
           </div>
         </div>
@@ -233,28 +242,25 @@ function BlogContent() {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            marginBottom: "50px",
+            width: "100%",
+            marginBottom: "40px",
           }}
         >
           <h2
             style={{
-              fontWeight: "800",
-              fontSize: "42px",
+              fontWeight: "900",
+              fontSize: "clamp(20px, 4vw, 25px)",
               color: "#1a1a1a",
               margin: 0,
             }}
           >
-            {searchQuery
-              ? `"${searchQuery}" bo'yicha natijalar`
-              : showAll
-              ? "Barcha maqolalar"
-              : "So'nggi maqolalar"}
+            {searchQuery ? "Natijalar" : "So'nggi maqolalar"}
           </h2>
           <button
             onClick={() => setShowAll(!showAll)}
             style={viewAllButtonStyle}
           >
-            {showAll ? "Asosiyga qaytish" : "View All"}
+            {showAll ? "Orqaga" : "View All"}
           </button>
         </div>
 
@@ -263,9 +269,14 @@ function BlogContent() {
             <h2>Malumotlar yuklanmoqda...</h2>
           </div>
         ) : (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "40px 2.5%" }}>
-            {(searchQuery ? filteredPosts : posts).map((post) => (
-              <div key={post.id} className="blog-card" style={cardStyle}>
+          <div className="blog-grid">
+            {(searchQuery
+              ? filteredPosts
+              : showAll
+              ? posts
+              : posts.slice(0, 10000000000000000000000000)
+            ).map((post) => (
+              <div key={post.id} className="blog-card">
                 <div
                   style={{ width: "100%", height: "260px", overflow: "hidden" }}
                 >
@@ -291,17 +302,10 @@ function BlogContent() {
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
-                      alignItems: "center",
                       marginBottom: "15px",
                     }}
                   >
-                    <span
-                      style={{
-                        color: "#94a3b8",
-                        fontSize: "14px",
-                        fontWeight: "600",
-                      }}
-                    >
+                    <span style={{ color: "#94a3b8", fontSize: "14px" }}>
                       📅 {post.date}
                     </span>
                     <div style={{ display: "flex", gap: "10px" }}>
@@ -310,18 +314,15 @@ function BlogContent() {
                         onClick={(e) => handleLike(e, post.id)}
                       >
                         <span
-                          className={`heart-icon ${
+                          className={
                             likedPosts.includes(post.id) ? "heart-active" : ""
-                          }`}
+                          }
                         >
                           ❤
-                        </span>
+                        </span>{" "}
                         {post.likes}
                       </div>
-                      <div className="stat-badge">
-                        <span style={{ color: "#94a3b8" }}>👁</span>
-                        {post.views}
-                      </div>
+                      <div className="stat-badge">👁 {post.views}</div>
                     </div>
                   </div>
                   <h3
@@ -329,7 +330,6 @@ function BlogContent() {
                       fontSize: "22px",
                       fontWeight: "700",
                       marginBottom: "15px",
-                      color: "#1a1a1a",
                     }}
                   >
                     {post.title}
@@ -338,7 +338,6 @@ function BlogContent() {
                     style={{
                       color: "#666",
                       fontSize: "15px",
-                      lineHeight: "1.6",
                       marginBottom: "25px",
                     }}
                   >
@@ -355,151 +354,162 @@ function BlogContent() {
                 </div>
               </div>
             ))}
-            {searchQuery && filteredPosts.length === 0 && (
-              <p
-                style={{ textAlign: "center", width: "100%", fontSize: "18px" }}
-              >
-                Hech narsa topilmadi...
-              </p>
-            )}
           </div>
         )}
       </div>
 
-      <footer style={{ backgroundColor: "#ffffff", padding: "80px 0 40px" }}>
-        <div style={newsletterBoxStyle}>
-          <div style={newsletterContentStyle}>
-            <h2
-              style={{
-                fontSize: "36px",
-                fontWeight: "bold",
-                margin: "0 0 20px",
-              }}
-            >
-              Bizning hikoyalarimizni bizdan har hafta pochta qutingizga olib
-              boring.
-            </h2>
-            <div
-              style={{
-                display: "flex",
-                gap: "15px",
-                justifyContent: "center",
-                marginBottom: "20px",
-              }}
-            >
-              <input
-                type="email"
-                placeholder="Your Email"
-                style={emailInputStyle}
-              />
-              <button style={getStartedButtonStyle}>Get started</button>
-            </div>
-            <p
-              style={{
-                fontSize: "14px",
-                opacity: 0.8,
-                maxWidth: "600px",
-                margin: "0 auto",
-              }}
-            >
-              Get a response tomorrow if you submit by 9pm today. If we received
-              after 9pm will get a reponse the following day.
-            </p>
-          </div>
-        </div>
-
+      <footer
+        style={{
+          backgroundColor: "#ffffff",
+          padding: "80px 0 40px",
+          borderTop: "1px solid #eee",
+        }}
+      >
         <div
-          style={{ maxWidth: "1400px", margin: "0 auto", textAlign: "center" }}
+          style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 20px" }}
         >
+          <div style={newsletterBoxStyle}>
+            <div style={{ maxWidth: "700px", margin: "0 auto" }}>
+              <h2
+                style={{
+                  fontSize: "clamp(24px, 5vw, 40px)",
+                  fontWeight: "bold",
+                  marginBottom: "25px",
+                  lineHeight: 1.2,
+                }}
+              >
+                Bizning hikoyalarimizni bizdan har hafta pochta qutingizga olib
+                boring.
+              </h2>
+              <div className="newsletter-container">
+                <input
+                  type="email"
+                  placeholder="Your Email"
+                  className="newsletter-input"
+                  style={emailInputStyle}
+                />
+                <button
+                  className="newsletter-btn"
+                  style={getStartedButtonStyle}
+                >
+                  Get started
+                </button>
+              </div>
+              <p
+                style={{
+                  fontSize: "13px",
+                  opacity: 0.7,
+                  marginTop: "20px",
+                  lineHeight: 1.5,
+                }}
+              >
+                Get a response tomorrow if you submit by 9pm today. If we
+                received after <br /> 9pm will get a response the following day.
+              </p>
+            </div>
+          </div>
+
           <div
             style={{
-              marginBottom: "30px",
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
-              justifyContent: "center",
-              gap: "10px",
+              textAlign: "center",
             }}
           >
             <div
               style={{
-                backgroundColor: "#7c4dff",
-                width: "40px",
-                height: "40px",
-                borderRadius: "10px",
                 display: "flex",
                 alignItems: "center",
+                gap: "10px",
+                marginBottom: "25px",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "#7c4dff",
+                  padding: "8px",
+                  borderRadius: "8px",
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                  <path d="M12 2L2 7L12 12L22 7L12 2Z" />
+                  <path
+                    d="M2 17L12 22L22 17"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2"
+                  />
+                  <path
+                    d="M2 12L12 17L22 12"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2"
+                  />
+                </svg>
+              </div>
+              <span
+                style={{
+                  fontSize: "24px",
+                  fontWeight: "bold",
+                  color: "#1a1a1a",
+                }}
+              >
+                Zarrin
+              </span>
+            </div>
+
+            <div
+              className="footer-nav"
+              style={{
+                display: "flex",
+                gap: "30px",
+                marginBottom: "30px",
+                flexWrap: "wrap",
                 justifyContent: "center",
               }}
             >
-              <span
-                style={{ color: "white", fontWeight: "bold", fontSize: "20px" }}
-              >
-                Z
-              </span>
+              <a href="#" className="footer-link">
+                Home
+              </a>
+              <a href="#" className="footer-link">
+                Blog
+              </a>
+              <a href="#" className="footer-link">
+                About
+              </a>
+              <a href="#" className="footer-link">
+                Contact Us
+              </a>
             </div>
-            <span
-              style={{ fontSize: "24px", fontWeight: "bold", color: "#1a1a1a" }}
-            >
-              Zarrin
-            </span>
+
+            <div style={{ display: "flex", gap: "15px", marginBottom: "40px" }}>
+              <a href="#" className="social-icon">
+                FB
+              </a>
+              <a href="#" className="social-icon">
+                IG
+              </a>
+              <a href="#" className="social-icon">
+                LN
+              </a>
+              <a href="#" className="social-icon">
+                YT
+              </a>
+            </div>
+
+            <div
+              style={{
+                width: "100%",
+                height: "1px",
+                backgroundColor: "#eee",
+                marginBottom: "30px",
+              }}
+            ></div>
+            <p style={{ color: "#94a3b8", fontSize: "14px" }}>
+              Copyright Ideapeel Inc © 2023. All Right Reserved
+            </p>
           </div>
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "40px",
-              marginBottom: "40px",
-            }}
-          >
-            <a href="#" className="footer-link">
-              Home
-            </a>
-            <a href="#" className="footer-link">
-              Blog
-            </a>
-            <a href="#" className="footer-link">
-              About
-            </a>
-            <a href="#" className="footer-link">
-              Contact Us
-            </a>
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "15px",
-              marginBottom: "40px",
-            }}
-          >
-            <a href="#" className="social-icon">
-              FB
-            </a>
-            <a href="#" className="social-icon">
-              IG
-            </a>
-            <a href="#" className="social-icon">
-              LN
-            </a>
-            <a href="#" className="social-icon">
-              YT
-            </a>
-          </div>
-
-          <div
-            style={{
-              height: "1px",
-              backgroundColor: "#e2e8f0",
-              width: "90%",
-              margin: "0 auto 30px",
-            }}
-          ></div>
-
-          <p style={{ color: "#64748b", fontSize: "14px" }}>
-            Copyright Ideapeel Inc © 2023. All Right Reserved
-          </p>
         </div>
       </footer>
     </div>
@@ -508,94 +518,42 @@ function BlogContent() {
 
 export default function Blog() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense
+      fallback={
+        <div style={{ padding: "100px", textAlign: "center" }}>
+          Yuklanmoqda...
+        </div>
+      }
+    >
       <BlogContent />
     </Suspense>
   );
 }
 
-const newsletterBoxStyle: any = {
-  maxWidth: "1300px",
-  margin: "0 auto 80px",
-  backgroundColor: "#7c4dff",
-  borderRadius: "30px",
-  padding: "80px 40px",
-  color: "white",
-  textAlign: "center",
-  backgroundImage:
-    "radial-gradient(circle at 10% 20%, rgba(255,255,255,0.1) 0%, transparent 20%), radial-gradient(circle at 90% 80%, rgba(255,255,255,0.1) 0%, transparent 20%)",
-};
-
-const newsletterContentStyle: any = {
-  maxWidth: "800px",
-  margin: "0 auto",
-};
-
-const emailInputStyle: any = {
-  padding: "15px 25px",
-  borderRadius: "10px",
-  border: "none",
-  width: "350px",
-  fontSize: "16px",
-};
-
-const getStartedButtonStyle: any = {
-  backgroundColor: "white",
-  color: "#7c4dff",
-  border: "none",
-  borderRadius: "10px",
-  padding: "0 35px",
-  fontWeight: "bold",
-  fontSize: "16px",
-  cursor: "pointer",
-};
-
-const heroCardStyle: any = {
-  width: "100%",
-  backgroundColor: "#7e57e2",
-  borderRadius: "30px",
-  padding: "60px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  color: "white",
-  boxShadow: "0 20px 40px rgba(126, 87, 226, 0.3)",
-};
 const heroButtonStyle: any = {
   backgroundColor: "white",
   color: "#7e57e2",
   padding: "15px 40px",
   border: "none",
   borderRadius: "12px",
-  fontSize: "16px",
   fontWeight: "bold",
   cursor: "pointer",
 };
 const heroImageStyle: any = {
-  height: "420px",
-  width: "420px",
+  height: "400px",
+  width: "400px",
   objectFit: "cover",
   borderRadius: "25px",
-  boxShadow: "0 15px 35px rgba(0,0,0,0.2)",
 };
 const viewAllButtonStyle: any = {
   backgroundColor: "#7c4dff",
   color: "white",
-  padding: "12px 28px",
+  padding: "12px 25px",
   border: "none",
   borderRadius: "10px",
-  fontSize: "15px",
   fontWeight: "600",
   cursor: "pointer",
-};
-const cardStyle: any = {
-  width: "31.6%",
-  backgroundColor: "white",
-  borderRadius: "24px",
-  overflow: "hidden",
-  boxShadow: "0 10px 20px rgba(0,0,0,0.04)",
-  display: "flex",
-  flexDirection: "column",
+  whiteSpace: "nowrap",
 };
 const backButtonStyle: any = {
   padding: "12px 25px",
@@ -605,13 +563,44 @@ const backButtonStyle: any = {
   borderRadius: "10px",
   cursor: "pointer",
   marginBottom: "30px",
-  fontWeight: "bold",
 };
 const activeImageStyle: any = {
   width: "100%",
-  height: "500px",
+  maxHeight: "500px",
   borderRadius: "24px",
   objectFit: "cover",
   marginBottom: "40px",
-  boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+};
+
+const newsletterBoxStyle: any = {
+  backgroundColor: "#7c4dff",
+  borderRadius: "24px",
+  padding: "60px 40px",
+  color: "white",
+  textAlign: "center",
+  marginBottom: "60px",
+  backgroundImage:
+    "radial-gradient(circle at top left, rgba(255,255,255,0.1), transparent), radial-gradient(circle at bottom right, rgba(255,255,255,0.1), transparent)",
+};
+
+const emailInputStyle: any = {
+  padding: "16px 25px",
+  borderRadius: "10px",
+  border: "none",
+  marginRight: "15px",
+  width: "350px",
+  fontSize: "16px",
+  color: "#333",
+};
+
+const getStartedButtonStyle: any = {
+  backgroundColor: "white",
+  color: "#7c4dff",
+  border: "none",
+  borderRadius: "10px",
+  padding: "16px 35px",
+  fontWeight: "bold",
+  fontSize: "16px",
+  cursor: "pointer",
+  transition: "0.3s",
 };

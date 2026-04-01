@@ -17,6 +17,7 @@ interface Post {
   desc: string;
   text: string;
   img: string;
+  date?: string; 
 }
 
 export default function Maqola() {
@@ -70,11 +71,23 @@ export default function Maqola() {
   const handleAddPost = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const docRef = await addDoc(collection(db, "posts"), {
+      const hozir = new Date();
+      const kun = String(hozir.getDate()).padStart(2, "0");
+      const oy = String(hozir.getMonth() + 1).padStart(2, "0");
+      const yil = hozir.getFullYear();
+      const bugungiSana = `${kun}.${oy}.${yil}`; 
+
+      const postData = {
         ...newPost,
-        createdAt: new Date().toISOString(),
-      });
-      setPosts([{ id: docRef.id, ...newPost }, ...posts]);
+        date: bugungiSana,
+        createdAt: hozir.toISOString(), 
+        likes: 0,
+        views: 0,
+      };
+
+      const docRef = await addDoc(collection(db, "posts"), postData);
+
+      setPosts([{ id: docRef.id, ...postData }, ...posts]);
       setIsAddModalOpen(false);
       setNewPost({ title: "", desc: "", text: "", img: "" });
     } catch (error) {
@@ -114,7 +127,7 @@ export default function Maqola() {
   return (
     <div
       style={{
-        padding: "40px",
+        padding: "20px",
         maxWidth: "1200px",
         margin: "0 auto",
         fontFamily: "'Inter', sans-serif",
@@ -126,6 +139,7 @@ export default function Maqola() {
         style={{
           display: "flex",
           justifyContent: "space-between",
+          alignItems: "center",
           gap: "20px",
           marginBottom: "40px",
           flexWrap: "wrap",
@@ -135,14 +149,21 @@ export default function Maqola() {
           boxShadow: "0 10px 25px -5px rgba(0,0,0,0.1)",
         }}
       >
-        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "10px",
+            flexWrap: "wrap",
+            flex: "1 1 auto",
+          }}
+        >
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveTab(cat)}
               className="category-btn"
               style={{
-                padding: "10px 22px",
+                padding: "10px 18px",
                 borderRadius: "12px",
                 border: "none",
                 cursor: "pointer",
@@ -150,13 +171,25 @@ export default function Maqola() {
                 color: activeTab === cat ? "#fff" : "#64748b",
                 fontWeight: "600",
                 transition: "all 0.3s ease",
+                fontSize: "14px",
+                flex: "1 1 auto",
+                textAlign: "center",
               }}
             >
               {cat}
             </button>
           ))}
         </div>
-        <div style={{ display: "flex", gap: "12px" }}>
+
+        <div
+          style={{
+            display: "flex",
+            gap: "12px",
+            flexWrap: "wrap",
+            flex: "1 1 300px",
+            width: "100%",
+          }}
+        >
           <input
             type="text"
             placeholder="Sarlavhadan qidirish..."
@@ -166,12 +199,10 @@ export default function Maqola() {
               padding: "12px 16px",
               borderRadius: "12px",
               border: "1px solid #e2e8f0",
-              width: "280px",
+              flex: "1 1 200px",
               outline: "none",
               transition: "border 0.3s",
             }}
-            onFocus={(e) => (e.target.style.borderColor = "#4f46e5")}
-            onBlur={(e) => (e.target.style.borderColor = "#e2e8f0")}
           />
           <button
             onClick={() => setIsAddModalOpen(true)}
@@ -185,6 +216,8 @@ export default function Maqola() {
               fontWeight: "600",
               cursor: "pointer",
               transition: "all 0.3s ease",
+              flex: "0 1 auto",
+              whiteSpace: "nowrap",
             }}
           >
             + Qo'shish
@@ -195,7 +228,7 @@ export default function Maqola() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
           gap: "30px",
         }}
       >
@@ -222,21 +255,15 @@ export default function Maqola() {
                 backgroundColor: "#fff",
                 display: "flex",
                 flexDirection: "column",
-                transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-                boxShadow:
-                  "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
+                transition: "all 0.4s",
+                boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
               }}
             >
               <div style={{ overflow: "hidden", height: "220px" }}>
                 <img
                   src={post.img || "https://via.placeholder.com/400x200"}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    transition: "transform 0.5s",
-                  }}
-                  className="card-img"
+                  alt={post.title}
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               </div>
               <div style={{ padding: "24px", flexGrow: 1 }}>
@@ -274,10 +301,7 @@ export default function Maqola() {
                       color: "#fff",
                       cursor: "pointer",
                       fontWeight: "600",
-                      transition: "opacity 0.2s",
                     }}
-                    onMouseOver={(e) => (e.currentTarget.style.opacity = "0.9")}
-                    onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
                   >
                     Tahrir
                   </button>
@@ -292,14 +316,7 @@ export default function Maqola() {
                       color: "#ef4444",
                       cursor: "pointer",
                       fontWeight: "600",
-                      transition: "background 0.2s",
                     }}
-                    onMouseOver={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#fecaca")
-                    }
-                    onMouseOut={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#fee2e2")
-                    }
                   >
                     O'chirish
                   </button>
@@ -343,7 +360,7 @@ export default function Maqola() {
               />
               <input
                 type="text"
-                placeholder="Sarlavha (Title)"
+                placeholder="Sarlavha"
                 value={isAddModalOpen ? newPost.title : editingPost?.title}
                 onChange={(e) =>
                   isAddModalOpen
@@ -355,7 +372,7 @@ export default function Maqola() {
               />
               <input
                 type="text"
-                placeholder="Qisqa tavsif (Desc)"
+                placeholder="Qisqa tavsif"
                 value={isAddModalOpen ? newPost.desc : editingPost?.desc}
                 onChange={(e) =>
                   isAddModalOpen
@@ -366,7 +383,7 @@ export default function Maqola() {
                 className="input-style"
               />
               <textarea
-                placeholder="To'liq matn (Text)"
+                placeholder="To'liq matn"
                 value={isAddModalOpen ? newPost.text : editingPost?.text}
                 onChange={(e) =>
                   isAddModalOpen
@@ -389,14 +406,7 @@ export default function Maqola() {
                     borderRadius: "12px",
                     fontWeight: "700",
                     cursor: "pointer",
-                    transition: "transform 0.2s",
                   }}
-                  onMouseDown={(e) =>
-                    (e.currentTarget.style.transform = "scale(0.98)")
-                  }
-                  onMouseUp={(e) =>
-                    (e.currentTarget.style.transform = "scale(1)")
-                  }
                 >
                   {isAddModalOpen ? "Saqlash" : "Yangilash"}
                 </button>
@@ -438,10 +448,11 @@ export default function Maqola() {
           align-items: center;
           justify-content: center;
           z-index: 1000;
+          padding: 20px;
         }
         .modal-content {
           background: #fff;
-          padding: 40px;
+          padding: 30px;
           border-radius: 28px;
           width: 100%;
           max-width: 500px;
@@ -453,27 +464,9 @@ export default function Maqola() {
           border-radius: 12px;
           outline: none;
           font-size: 15px;
-          transition: all 0.3s;
-        }
-        .input-style:focus {
-          border-color: #4f46e5;
-          box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
         }
         .post-card:hover {
-          transform: translateY(-12px);
-          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-            0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        .post-card:hover .card-img {
-          transform: scale(1.08);
-        }
-        .category-btn:hover {
-          background-color: #e2e8f0;
-          transform: translateY(-2px);
-        }
-        .add-btn:hover {
-          background-color: #059669;
-          box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+          transform: translateY(-8px);
         }
         @keyframes slideUp {
           from {

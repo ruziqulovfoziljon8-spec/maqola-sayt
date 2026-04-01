@@ -21,6 +21,7 @@ export default function About() {
         minHeight: "100vh",
         fontFamily: "'Inter', sans-serif",
         color: colors.dark,
+        overflowX: "hidden",
       }}
     >
       <style>{`
@@ -28,10 +29,50 @@ export default function About() {
         .footer-link:hover { color: #7c4dff; }
         .social-icon { width: 35px; height: 35px; background: #7c4dff; color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; text-decoration: none; font-size: 12px; font-weight: bold; transition: 0.3s; }
         .social-icon:hover { opacity: 0.8; transform: translateY(-3px); }
+        
+        .main-content { padding: 80px 20px; }
+
+        @media (max-width: 768px) {
+          .main-content { padding: 40px 20px !important; } 
+          
+          .team-section { 
+            display: block !important; 
+            margin-bottom: 50px !important; 
+          }
+          .team-section h2 {
+            flex: none !important;
+            width: 100% !important;
+            margin-bottom: 20px !important; 
+          }
+          .team-text { 
+            padding-left: 0 !important; 
+            border-left: none !important; 
+            border-top: 4px solid #7c4dff; 
+            padding-top: 20px !important; 
+            flex: none !important; 
+            width: 100% !important;
+            margin: 0 !important;
+          }
+
+          .newsletter-box { padding: 40px 15px !important; border-radius: 20px !important; margin: 0 15px 60px !important; }
+          .email-container { flex-direction: column !important; align-items: center; }
+          .email-input { max-width: 100% !important; width: 100% !important; }
+          .get-started-btn { width: 100% !important; }
+          .footer-links { gap: 20px !important; }
+          .process-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+          .process-card { padding: 40px 25px !important; border-radius: 30px !important; }
+          .about-hero-img { border-radius: 20px !important; margin-bottom: 60px !important; }
+        }
+
+        @media (max-width: 480px) {
+          .header-title { font-size: 28px !important; }
+          .header-desc { font-size: 16px !important; }
+        }
       `}</style>
 
       <div
-        style={{ maxWidth: "1140px", margin: "0 auto", padding: "80px 20px" }}
+        className="main-content"
+        style={{ maxWidth: "1140px", margin: "0 auto" }}
       >
         <header style={{ textAlign: "center", marginBottom: "80px" }}>
           <span
@@ -51,6 +92,7 @@ export default function About() {
             Biz haqimizda
           </span>
           <h1
+            className="header-title"
             style={{
               fontSize: "clamp(32px, 5vw, 52px)",
               fontWeight: "900",
@@ -62,6 +104,7 @@ export default function About() {
             Ijodiy blog yozish va <br /> nashr etish platformasi
           </h1>
           <p
+            className="header-desc"
             style={{
               fontSize: "18px",
               color: colors.gray,
@@ -76,6 +119,7 @@ export default function About() {
         </header>
 
         <div
+          className="about-hero-img"
           style={{
             width: "100%",
             borderRadius: "40px",
@@ -88,11 +132,17 @@ export default function About() {
           <img
             src={about.src}
             alt="Jamoaviy ish"
-            style={{ width: "100%", display: "block", height: "auto" }}
+            style={{
+              width: "100%",
+              display: "block",
+              height: "auto",
+              objectFit: "cover",
+            }}
           />
         </div>
 
         <div
+          className="team-section"
           style={{
             display: "flex",
             flexWrap: "wrap",
@@ -104,7 +154,7 @@ export default function About() {
         >
           <h2
             style={{
-              fontSize: "40px",
+              fontSize: "clamp(28px, 4vw, 40px)",
               fontWeight: "800",
               flex: "1 1 500px",
               margin: 0,
@@ -114,6 +164,7 @@ export default function About() {
             Jamoamiz qanday ishlashini <br /> ko'rsatib beramiz
           </h2>
           <p
+            className="team-text"
             style={{
               fontSize: "16px",
               color: colors.gray,
@@ -129,9 +180,10 @@ export default function About() {
         </div>
 
         <div
+          className="process-grid"
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
             gap: "30px",
             marginBottom: "100px",
           }}
@@ -158,6 +210,7 @@ export default function About() {
           ].map((item) => (
             <div
               key={item.id}
+              className="process-card"
               onClick={() => setActiveCard(item.id)}
               style={{
                 padding: "60px 45px",
@@ -218,20 +271,23 @@ export default function About() {
         </div>
       </div>
 
-      <footer style={{ backgroundColor: "#ffffff", padding: "80px 0 40px" }}>
-        <div style={newsletterBoxStyle}>
+      <footer style={{ backgroundColor: "#ffffff", padding: "40px 0" }}>
+        {/* Footer qismlari o'zgarishsiz qoldi */}
+        <div className="newsletter-box" style={newsletterBoxStyle}>
           <div style={newsletterContentStyle}>
             <h2
               style={{
-                fontSize: "clamp(24px, 4vw, 36px)",
+                fontSize: "clamp(22px, 4vw, 36px)",
                 fontWeight: "bold",
                 margin: "0 0 20px",
+                lineHeight: "1.3",
               }}
             >
               Bizning hikoyalarimizni bizdan har hafta pochta qutingizga olib
               boring.
             </h2>
             <div
+              className="email-container"
               style={{
                 display: "flex",
                 flexWrap: "wrap",
@@ -241,11 +297,14 @@ export default function About() {
               }}
             >
               <input
+                className="email-input"
                 type="email"
                 placeholder="Your Email"
                 style={emailInputStyle}
               />
-              <button style={getStartedButtonStyle}>Get started</button>
+              <button className="get-started-btn" style={getStartedButtonStyle}>
+                Get started
+              </button>
             </div>
             <p
               style={{
@@ -253,10 +312,11 @@ export default function About() {
                 opacity: 0.8,
                 maxWidth: "600px",
                 margin: "0 auto",
+                lineHeight: "1.5",
               }}
             >
               Get a response tomorrow if you submit by 9pm today. If we received
-              after 9pm will get a reponse the following day.
+              after <br /> 9pm will get a reponse the following day.
             </p>
           </div>
         </div>
@@ -301,8 +361,8 @@ export default function About() {
               Zarrin
             </span>
           </div>
-
           <div
+            className="footer-links"
             style={{
               display: "flex",
               justifyContent: "center",
@@ -324,7 +384,6 @@ export default function About() {
               Contact Us
             </a>
           </div>
-
           <div
             style={{
               display: "flex",
@@ -346,7 +405,6 @@ export default function About() {
               YT
             </a>
           </div>
-
           <div
             style={{
               height: "1px",
@@ -355,7 +413,6 @@ export default function About() {
               marginBottom: "30px",
             }}
           ></div>
-
           <p style={{ color: "#64748b", fontSize: "14px" }}>
             Copyright Ideapeel Inc © 2023. All Right Reserved
           </p>
@@ -381,7 +438,6 @@ const newsletterContentStyle: React.CSSProperties = {
   maxWidth: "800px",
   margin: "0 auto",
 };
-
 const emailInputStyle: React.CSSProperties = {
   padding: "15px 25px",
   borderRadius: "10px",
@@ -389,8 +445,8 @@ const emailInputStyle: React.CSSProperties = {
   width: "100%",
   maxWidth: "350px",
   fontSize: "16px",
+  outline: "none",
 };
-
 const getStartedButtonStyle: React.CSSProperties = {
   backgroundColor: "white",
   color: "#7c4dff",
@@ -400,4 +456,5 @@ const getStartedButtonStyle: React.CSSProperties = {
   fontWeight: "bold",
   fontSize: "16px",
   cursor: "pointer",
+  transition: "0.3s",
 };
