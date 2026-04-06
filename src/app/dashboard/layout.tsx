@@ -123,7 +123,14 @@ export default function DashboardLayout({
           </span>
         </div>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <nav
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+            flex: 1,
+          }}
+        >
           <Link
             href="/dashboard/maqola"
             className={`nav-item ${
@@ -140,13 +147,40 @@ export default function DashboardLayout({
             className={`nav-item ${
               pathname === "/dashboard/foydalanuvchi" ? "active" : ""
             }`}
-            onClick={handleLinkClick} 
+            onClick={handleLinkClick}
           >
             <span className="icon">👥</span>
             {(isOpen || isMobile) && (
               <span className="text">Foydalanuvchilar</span>
             )}
           </Link>
+
+          <div
+            style={{
+              marginTop: "auto",
+              borderTop: "1px solid rgba(255,255,255,0.1)",
+              paddingTop: "20px",
+              marginBottom: "80px",
+            }}
+          >
+            <Link
+              href="/" 
+              className="nav-item logout-item"
+              style={{
+                background: "rgba(239, 68, 68, 0.1)",
+                color: "#f87171",
+              }}
+            >
+              <span className="icon" style={{ fontSize: "22px" }}>
+                🚀
+              </span>
+              {(isOpen || isMobile) && (
+                <span className="text" style={{ fontWeight: "600" }}>
+                  Saytga qaytish
+                </span>
+              )}
+            </Link>
+          </div>
         </nav>
       </aside>
 
@@ -242,25 +276,33 @@ export default function DashboardLayout({
           padding: 14px;
           text-decoration: none;
           color: #94a3b8;
-          border-radius: 14px;
-          transition: 0.3s;
+          border-radius: 16px;
+          transition: all 0.3s ease;
           white-space: nowrap;
         }
         .nav-item:hover {
-          background-color: rgba(255, 255, 255, 0.05);
+          background-color: rgba(255, 255, 255, 0.08);
           color: white;
           transform: translateX(5px);
         }
         .nav-item.active {
           background-color: #6366f1;
           color: white;
-          box-shadow: 0 8px 15px rgba(99, 102, 241, 0.3);
+          box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        }
+        .logout-item:hover {
+          background-color: rgba(239, 68, 68, 0.2) !important;
+          color: #ef4444 !important;
+          box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
         }
         .icon {
           font-size: 20px;
           min-width: 24px;
           display: flex;
           justify-content: center;
+        }
+        .text {
+          transition: opacity 0.3s;
         }
 
         @media (min-width: 1025px) {

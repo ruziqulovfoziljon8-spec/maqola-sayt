@@ -113,6 +113,39 @@ function BlogContent() {
     }
   };
 
+  if (!loading && searchQuery && filteredPosts.length === 0) {
+    return (
+      <div style={noDataContainerStyle}>
+        <div style={{ fontSize: "100px", marginBottom: "20px" }}>🔍</div>
+        <h2 style={{ fontSize: "32px", fontWeight: "800", color: "#1a1a1a" }}>
+          Ma'lumot topilmadi
+        </h2>
+        <p
+          style={{
+            color: "#666",
+            fontSize: "18px",
+            margin: "20px 0 40px",
+            maxWidth: "600px",
+            lineHeight: "1.6",
+          }}
+        >
+          Uzr,{" "}
+          <span style={{ fontWeight: "700", color: "#1a1a1a" }}>
+            "{searchQuery}"
+          </span>{" "}
+          bo'yicha hech qanday maqola topilmadi. Boshqa kalit so'zdan foydalanib
+          ko'ring.
+        </p>
+        <button
+          onClick={() => (window.location.href = "/blog")}
+          style={clearSearchButtonStyle}
+        >
+          Qidiruvni tozalash
+        </button>
+      </div>
+    );
+  }
+
   if (activePost) {
     return (
       <div
@@ -274,7 +307,7 @@ function BlogContent() {
               ? filteredPosts
               : showAll
               ? posts
-              : posts.slice(0, 10000000000000000000000000)
+              : posts.slice(0, 10000)
             ).map((post) => (
               <div key={post.id} className="blog-card">
                 <div
@@ -529,6 +562,29 @@ export default function Blog() {
     </Suspense>
   );
 }
+
+const noDataContainerStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "150px 20px",
+  textAlign: "center",
+  minHeight: "60vh",
+  fontFamily: "sans-serif",
+};
+
+const clearSearchButtonStyle: React.CSSProperties = {
+  backgroundColor: "#7c4dff",
+  color: "white",
+  padding: "15px 40px",
+  border: "none",
+  borderRadius: "12px",
+  fontWeight: "bold",
+  fontSize: "16px",
+  cursor: "pointer",
+  boxShadow: "0 10px 20px rgba(124, 77, 255, 0.2)",
+};
 
 const heroButtonStyle: any = {
   backgroundColor: "white",

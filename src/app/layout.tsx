@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
 import Navbar from "@/components/Navbar";
 
 const geistSans = Geist({
@@ -22,13 +21,14 @@ export default function RootLayout({
 }) {
   const pathname = usePathname();
 
-  const isNavbarVisible = pathname !== "/admin";
+  const isNavbarVisible =
+    pathname !== "/admin" && !pathname.startsWith("/dashboard");
 
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        style={{ margin: 0, padding: 0 }} 
+        style={{ margin: 0, padding: 0 }}
       >
         {isNavbarVisible && <Navbar />}
 
